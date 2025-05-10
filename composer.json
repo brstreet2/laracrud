@@ -1,0 +1,30 @@
+{
+    "name": "brstreet2/laracrud",
+    "description": "A Laravel package for generating API CRUD functionality",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "brstreet2",
+            "email": "azkayoi123@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Laracrud\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Laracrud\\LaracrudServiceProvider"
+            ]
+        }
+    },
+    "require": {
+        "php": "^8.0",
+        "illuminate/support": "^9.0|^10.0|^11.0"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

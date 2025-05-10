@@ -1,0 +1,114 @@
+<?php
+
+namespace Tests\Feature;
+
+use Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Models\{{ModelName}};
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class {{ModelName}}ControllerTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private $routeBase;
+
+    /**
+     * Set up test dependencies.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->routeBase = '{{model_plural_snake_case}}';
+    }
+
+    /**
+     * Create a model instance for tests.
+     *
+     * @param int $count
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    private function createModel(int $count = 1)
+    {
+        return $count === 1
+        ? {{ModelName}}::factory()->create()
+        : {{ModelName}}::factory($count)->create();
+    }
+
+    /**
+     * Generate payload data for the model.
+     *
+     * @return array
+     */
+    private function makePayload()
+    {
+        return {{ModelName}}::factory()->make()->toArray();
+    }
+
+    /**
+     * Check if the model uses soft deletes.
+     *
+     * @return bool
+     */
+    private function isSoftDeletable(): bool
+    {
+        return in_array(SoftDeletes::class, class_uses_recursive({{ModelName}}::class));
+    }
+
+    public function test_index_shows_all_{{ModelNamePlural}}()
+    {
+        $this->createModel(5);
+
+        $response = $this->getJson(route("{$this->routeBase}.index"));
+
+        $response->assertOk();
+        $response->assertJsonCount(5, 'data');
+    }
+
+    public function test_store_creates_a_new_model()
+    {
+        $payload = $this->makePayload();
+
+        $response = $this->postJson(route("{$this->routeBase}.store"), $payload);
+
+        $response->assertCreated();
+        $this->assertDatabaseHas($this->routeBase, $payload);
+    }
+
+    public function test_show_displays_a_single_model()
+    {
+        $model = $this->createModel();
+
+        $response = $this->getJson(route("{$this->routeBase}.show", $model->id));
+
+        $response->assertOk();
+        $response->assertJsonPath('data.id', $model->id);
+    }
+
+    public function test_update_modifies_existing_model()
+    {
+        $model = $this->createModel();
+        $payload = $this->makePayload();
+
+        $response = $this->putJson(route("{$this->routeBase}.update", $model->id), $payload);
+
+        $response->assertOk();
+        $this->assertDatabaseHas($this->routeBase, $payload);
+    }
+
+    public function test_destroy_deletes_model()
+    {
+        $model = $this->createModel();
+
+        $response = $this->deleteJson(route("{$this->routeBase}.destroy", $model->id));
+
+        if ($this->isSoftDeletable()) {
+            $response->assertNoContent();
+            $this->assertSoftDeleted($this->routeBase, ['id' => $model->id]);
+        } else {
+            $response->assertNoContent();
+            $this->assertDatabaseMissing($this->routeBase, ['id' => $model->id]);
+        }
+    }
+}

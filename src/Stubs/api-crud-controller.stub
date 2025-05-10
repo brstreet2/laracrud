@@ -1,0 +1,48 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\{{ModelName}}\IndexRequest;
+use App\Http\Requests\{{ModelName}}\CreateRequest;
+use App\Http\Requests\{{ModelName}}\UpdateRequest;
+use App\Models\{{ModelName}};
+use App\Http\Resources\{{ModelName}}Resource;
+
+class {{ModelName}}Controller extends Controller
+{
+    public function index(IndexRequest $request)
+    {
+        // Logic for listing {{ModelName}} items, e.g., pagination
+        return {{ModelName}}Resource::collection({{ModelName}}::all());
+    }
+
+    public function store(CreateRequest $request)
+    {
+        // Logic for storing a new {{ModelName}} item
+        $validated = $request->validated();
+        $model = {{ModelName}}::create($validated);
+
+        return new {{ModelName}}Resource($model);
+    }
+
+    public function update(UpdateRequest $request, {{ModelName}} ${{ModelNameVariable}})
+    {
+        // Logic for updating an existing {{ModelName}} item
+        $validated = $request->validated();
+        ${{ModelNameVariable}}->update($validated);
+
+        return new {{ModelName}}Resource(${{ModelNameVariable}});
+    }
+
+    public function show({{ModelName}} ${{ModelNameVariable}})
+    {
+        return new {{ModelName}}Resource(${{ModelNameVariable}});
+    }
+
+    public function destroy({{ModelName}} ${{ModelNameVariable}})
+    {
+        ${{ModelNameVariable}}->delete();
+        return response()->noContent();
+    }
+}
