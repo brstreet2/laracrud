@@ -1,6 +1,7 @@
 {
     "name": "brstreet2/laracrud",
     "description": "A Laravel package for generating API CRUD functionality",
+    "version": "1.0.1",
     "type": "library",
     "license": "MIT",
     "authors": [
