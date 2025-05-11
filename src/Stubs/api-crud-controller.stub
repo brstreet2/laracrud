@@ -8,41 +8,139 @@ use App\Http\Requests\{{ModelName}}\CreateRequest;
 use App\Http\Requests\{{ModelName}}\UpdateRequest;
 use App\Models\{{ModelName}};
 use App\Http\Resources\{{ModelName}}Resource;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 
+/**
+ * Class {{ModelName}}Controller
+ * 
+ * Controller to manage {{ModelName}} CRUD operations.
+ */
 class {{ModelName}}Controller extends Controller
 {
-    public function index(IndexRequest $request)
+    /**
+     * Display a paginated list of {{ModelName}}.
+     * 
+     * @param \App\Http\Requests\{{ModelName}}\IndexRequest $request
+     * @return JsonResponse | AnonymousResourceCollection
+     */
+    public function index(IndexRequest $request): JsonResponse | AnonymousResourceCollection
     {
-        // Logic for listing {{ModelName}} items, e.g., pagination
-        return {{ModelName}}Resource::collection({{ModelName}}::all());
+        try {
+            $request->validated();
+
+            $perPage = $request['per_page'] ?? 10;
+            $sortBy = $request['sort_by'] ?? 'id';
+            $sortOrder = $request['sort_order'] ?? 'asc';
+
+            $data = {{ModelName}}::orderBy($sortBy, $sortOrder)->paginate($perPage);
+
+            return {{ModelName}}Resource::collection($data)->additional([
+                'message'   => __(':name retrieved successfully.', ['name' => '{{ModelName}}'])
+            ])
+            ->response()
+            ->setStatusCode(Response::HTTP_OK);
+
+        } catch (\Exception $e) {
+            report($e);
+
+            return response()->json([
+                'message' => __('An error occured while processing your request.'),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
-    public function store(CreateRequest $request)
+    /**
+     * Display the specified resource.
+     *
+     * @param  \App\Models\{{ModelName}}  ${{ModelNameVariable}}
+     * @return \App\Http\Resources\{{ModelName}}Resource
+     */
+    public function show({{ModelName}} ${{ModelNameVariable}}): {{ModelName}}Resource
     {
-        // Logic for storing a new {{ModelName}} item
-        $validated = $request->validated();
-        $model = {{ModelName}}::create($validated);
-
-        return new {{ModelName}}Resource($model);
-    }
-
-    public function update(UpdateRequest $request, {{ModelName}} ${{ModelNameVariable}})
-    {
-        // Logic for updating an existing {{ModelName}} item
-        $validated = $request->validated();
-        ${{ModelNameVariable}}->update($validated);
-
         return new {{ModelName}}Resource(${{ModelNameVariable}});
     }
 
-    public function show({{ModelName}} ${{ModelNameVariable}})
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \App\Http\Requests\{{ModelName}}\CreateRequest  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function store(CreateRequest $request): JsonResponse
     {
-        return new {{ModelName}}Resource(${{ModelNameVariable}});
+        try {
+            // Logic for storing a new {{ModelName}} item
+            $inputs = $request->validated();
+            ${{ModelNameVariable}} = {{ModelName}}::create($inputs);
+    
+            return (new {{ModelName}}Resource(${{ModelNameVariable}}))->additional([
+                'message'   => __(':name created successfully.', ['name' => '{{ModelName}}'])
+            ])
+            ->response()
+            ->setStatusCode(Response::HTTP_CREATED);
+        } catch (\Exception $e) {
+            report($e);
+
+            return response()->json([
+                'message' => __('Error creating :name.', ['name' => '{{ModelName}}']),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
-    public function destroy({{ModelName}} ${{ModelNameVariable}})
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \App\Http\Requests\{{ModelName}}\UpdateRequest  $request
+     * @param  \App\Models\{{ModelName}}  ${{ModelNameVariable}}
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function update(UpdateRequest $request, {{ModelName}} ${{ModelNameVariable}}): JsonResponse
     {
-        ${{ModelNameVariable}}->delete();
-        return response()->noContent();
+        try {
+            $inputs = $request->validated();
+
+            ${{ModelNameVariable}}->update($inputs);
+
+            return (new {{ModelName}}Resource(${{ModelNameVariable}}))
+            ->additional([
+                'message' => __(':name updated successfully', ['name' => '{{ModelName}}']),
+            ])
+            ->response()
+            ->setStatusCode(Response::HTTP_OK);
+        } catch (\Exception $e) {
+            report($e);
+
+            return response()->json([
+                'status'  => false,
+                'message' => __('Error updating :name.', ['name' => '{{ModelName}}']),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  \App\Models\{{ModelName}}  ${{ModelNameVariable}}
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function destroy({{ModelName}} ${{ModelNameVariable}}): JsonResponse
+    {
+        try {
+            ${{ModelNameVariable}}->delete();
+
+            return response()->json([
+                'status'  => true,
+                'message' => __(':name deleted successfully', ['name' => '{{ModelName}}']),
+            ], Response::HTTP_OK);
+        } catch (\Exception $e) {
+            report($e);
+
+            return response()->json([
+                'status'  => false,
+                'message' => __('Error deleting :name.', ['name' => '{{ModelName}}']),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 }
