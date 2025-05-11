@@ -5,7 +5,7 @@ namespace Laracrud;
 use Illuminate\Support\ServiceProvider;
 use Laracrud\Console\ApiCrudCommand;
 
-class YourPackageServiceProvider extends ServiceProvider
+class LaraCrudServiceProvider extends ServiceProvider
 {
     public function register()
     {
@@ -17,7 +17,7 @@ class YourPackageServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->publishes([
-            __DIR__.'/stubs' => base_path('stubs'),
+            __DIR__ . '/stubs' => base_path('stubs'),
         ], 'api-crud-stubs');
     }
 }
