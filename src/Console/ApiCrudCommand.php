@@ -61,7 +61,7 @@ class ApiCrudCommand extends Command
 
     private function getModelClass(string $modelName): string
     {
-        return 'App\\Models\\'.Str::studly($modelName);
+        return 'App\\Models\\' . Str::studly($modelName);
     }
 
     private function handleMissingModel(string $modelName): void
@@ -73,7 +73,7 @@ class ApiCrudCommand extends Command
             $this->info("Model $modelName created successfully.");
 
             if ($this->confirm("Do you want to create a migration file for '$modelName'?")) {
-                $migrationName = 'create_'.Str::snake(Str::plural($modelName)).'_table';
+                $migrationName = 'create_' . Str::snake(Str::plural($modelName)) . '_table';
                 $this->call('make:migration', ['name' => $migrationName]);
                 $this->info("Migration for $modelName created successfully.");
             }
@@ -83,16 +83,16 @@ class ApiCrudCommand extends Command
     private function handleControllerAndResource(string $modelName): void
     {
         if ($this->confirm("Do you want to create a controller for '$modelName'?")) {
-            $controllerName = Str::studly($modelName).'Controller';
+            $controllerName = Str::studly($modelName) . 'Controller';
 
             // Use the controller stub to generate the controller
             $controllerStub = $this->getControllerStub($modelName);
-            $controllerPath = app_path('Http/Controllers/Api/'.$controllerName.'.php');
+            $controllerPath = app_path('Http/Controllers/Api/' . $controllerName . '.php');
             $this->filesystem->put($controllerPath, $controllerStub);
 
             $this->info("Generated API Controller: $controllerPath");
 
-            $resourceName = Str::studly($modelName).'Resource';
+            $resourceName = Str::studly($modelName) . 'Resource';
             $this->call('make:resource', ['name' => $resourceName]);
             $this->info("Generated API Resource: $resourceName");
 
@@ -103,7 +103,14 @@ class ApiCrudCommand extends Command
 
     private function getControllerStub(string $modelName): string
     {
-        $stub = file_get_contents(base_path('stubs/api-crud-controller.stub'));
+        $stubPath = __DIR__ . '/../stubs/api-crud-controller.stub';
+
+        if (!file_exists($stubPath)) {
+            $this->error('Controller stub file not found in the package.');
+            return '';
+        }
+
+        $stub = file_get_contents($stubPath);
 
         // Replace placeholders in the stub with dynamic content
         return str_replace(
@@ -115,7 +122,7 @@ class ApiCrudCommand extends Command
 
     private function generateRequests(string $modelName): void
     {
-        $requestDirectory = app_path('Http/Requests/'.Str::studly($modelName));
+        $requestDirectory = app_path('Http/Requests/' . Str::studly($modelName));
 
         // Ensure the request directory exists
         if (! $this->filesystem->exists($requestDirectory)) {
@@ -123,19 +130,19 @@ class ApiCrudCommand extends Command
         }
 
         // Generate IndexRequest
-        $indexRequestClass = $requestDirectory.'/IndexRequest.php';
+        $indexRequestClass = $requestDirectory . '/IndexRequest.php';
         $indexRequestContent = $this->getRequestStub('Index', $modelName);
         $this->filesystem->put($indexRequestClass, $indexRequestContent);
         $this->info("Generated IndexRequest: $indexRequestClass");
 
         // Generate CreateRequest
-        $createRequestClass = $requestDirectory.'/CreateRequest.php';
+        $createRequestClass = $requestDirectory . '/CreateRequest.php';
         $createRequestContent = $this->getRequestStub('Create', $modelName);
         $this->filesystem->put($createRequestClass, $createRequestContent);
         $this->info("Generated CreateRequest: $createRequestClass");
 
         // Generate UpdateRequest
-        $updateRequestClass = $requestDirectory.'/UpdateRequest.php';
+        $updateRequestClass = $requestDirectory . '/UpdateRequest.php';
         $updateRequestContent = $this->getRequestStub('Update', $modelName);
         $this->filesystem->put($updateRequestClass, $updateRequestContent);
         $this->info("Generated UpdateRequest: $updateRequestClass");
@@ -143,7 +150,14 @@ class ApiCrudCommand extends Command
 
     private function getRequestStub(string $type, string $modelName): string
     {
-        $stub = file_get_contents(base_path('stubs/api-crud-request.stub'));
+        $stubPath = __DIR__ . '/../stubs/api-crud-controller.stub';
+
+        if (!file_exists($stubPath)) {
+            $this->error('Controller stub file not found in the package.');
+            return '';
+        }
+
+        $stub = file_get_contents($stubPath);
 
         // Replace placeholders in the stub with dynamic content
         return str_replace(
@@ -158,7 +172,7 @@ class ApiCrudCommand extends Command
         $this->handleControllerAndResource($modelName);
         $this->generateFactory($modelName);
 
-        $migrationName = 'create_'.Str::snake(Str::plural($modelName)).'_table';
+        $migrationName = 'create_' . Str::snake(Str::plural($modelName)) . '_table';
         $migrationPath = database_path('migrations');
         $existingMigrations = $this->filesystem->allFiles($migrationPath);
         $migrationExists = false;
@@ -183,7 +197,7 @@ class ApiCrudCommand extends Command
 
     private function generateFactory(string $modelName): void
     {
-        $factoryName = Str::studly($modelName).'Factory';
+        $factoryName = Str::studly($modelName) . 'Factory';
         if (! class_exists($factoryName)) {
             $this->call('make:factory', ['name' => $factoryName, '--model' => $modelName]);
             $this->info("Generated Factory: $factoryName");
@@ -194,33 +208,34 @@ class ApiCrudCommand extends Command
 
     private function generateTest(string $modelName): void
     {
-        $testName = Str::studly($modelName).'ControllerTest';
-        $testFilePath = base_path('tests/Feature/'.$testName.'.php');
+        $stubPath = __DIR__ . '/../stubs/api-crud-test.stub';
 
-        if (! $this->filesystem->exists($testFilePath)) {
-            $stub = file_get_contents(base_path('stubs/api-crud-test.stub'));
-
-            // Use snake_case for route names to match ->names()
-            $modelNameSnakeCase = Str::snake($modelName);
-            $modelNamePluralSnakeCase = Str::plural($modelNameSnakeCase);
-
-            $testContent = str_replace(
-                ['{{ModelName}}', '{{ModelNameVariable}}', '{{ModelNamePlural}}', '{{ModelFactory}}', '{{model_plural_snake_case}}'],
-                [
-                    Str::studly($modelName),
-                    Str::camel($modelName),
-                    Str::plural(Str::camel($modelName)),
-                    Str::studly($modelName).'Factory',
-                    $modelNamePluralSnakeCase, // Use plural snake_case for route names
-                ],
-                $stub
-            );
-
-            $this->filesystem->put($testFilePath, $testContent);
-            $this->info("Generated Test File: $testFilePath");
-        } else {
-            $this->warn("Test file for $modelName already exists.");
+        if (!file_exists($stubPath)) {
+            $this->error('Test stub file not found in the package.');
+            return;
         }
+
+        $stub = file_get_contents($stubPath);
+
+        // Use snake_case for route names to match ->names()
+        $modelNameSnakeCase = Str::snake($modelName);
+        $modelNamePluralSnakeCase = Str::plural($modelNameSnakeCase);
+
+        $testContent = str_replace(
+            ['{{ModelName}}', '{{ModelNameVariable}}', '{{ModelNamePlural}}', '{{ModelFactory}}', '{{model_plural_snake_case}}'],
+            [
+                Str::studly($modelName),
+                Str::camel($modelName),
+                Str::plural(Str::camel($modelName)),
+                Str::studly($modelName) . 'Factory',
+                $modelNamePluralSnakeCase, // Use plural snake_case for route names
+            ],
+            $stub
+        );
+
+        $testFilePath = base_path('tests/Feature/' . Str::studly($modelName) . 'ControllerTest.php');
+        $this->filesystem->put($testFilePath, $testContent);
+        $this->info("Generated Test File: $testFilePath");
     }
 
     private function addRoutes(string $modelName): void
@@ -229,7 +244,7 @@ class ApiCrudCommand extends Command
         $routeFilePath = base_path('routes/api.php');
         $pluralKebabCase = Str::plural(Str::kebab($modelName));
         $pluralSnakeCase = Str::plural(Str::snake($modelName));
-        $controllerClass = Str::studly($modelName).'Controller';
+        $controllerClass = Str::studly($modelName) . 'Controller';
 
         $routeDefinition = <<<ROUTE
 
