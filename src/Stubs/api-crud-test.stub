@@ -104,10 +104,10 @@ class {{ModelName}}ControllerTest extends TestCase
         $response = $this->deleteJson(route("{$this->routeBase}.destroy", $model->id));
 
         if ($this->isSoftDeletable()) {
-            $response->assertNoContent();
+            $response->assertOk;
             $this->assertSoftDeleted($this->routeBase, ['id' => $model->id]);
         } else {
-            $response->assertNoContent();
+            $response->assertOk;
             $this->assertDatabaseMissing($this->routeBase, ['id' => $model->id]);
         }
     }

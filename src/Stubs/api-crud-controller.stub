@@ -131,7 +131,6 @@ class {{ModelName}}Controller extends Controller
             ${{ModelNameVariable}}->delete();
 
             return response()->json([
-                'status'  => true,
                 'message' => __(':name deleted successfully', ['name' => '{{ModelName}}']),
             ], Response::HTTP_OK);
         } catch (\Exception $e) {
