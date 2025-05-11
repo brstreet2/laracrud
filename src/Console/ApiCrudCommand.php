@@ -85,9 +85,15 @@ class ApiCrudCommand extends Command
         if ($this->confirm("Do you want to create a controller for '$modelName'?")) {
             $controllerName = Str::studly($modelName) . 'Controller';
 
+            // Ensure the Api directory exists
+            $controllerDirectory = app_path('Http/Controllers/Api');
+            if (! $this->filesystem->exists($controllerDirectory)) {
+                $this->filesystem->makeDirectory($controllerDirectory, 0755, true);
+            }
+
             // Use the controller stub to generate the controller
             $controllerStub = $this->getControllerStub($modelName);
-            $controllerPath = app_path('Http/Controllers/Api/' . $controllerName . '.php');
+            $controllerPath = $controllerDirectory . '/' . $controllerName . '.php';
             $this->filesystem->put($controllerPath, $controllerStub);
 
             $this->info("Generated API Controller: $controllerPath");
@@ -150,7 +156,7 @@ class ApiCrudCommand extends Command
 
     private function getRequestStub(string $type, string $modelName): string
     {
-        $stubPath = __DIR__ . '/../stubs/api-crud-controller.stub';
+        $stubPath = __DIR__ . '/../stubs/api-crud-request.stub';
 
         if (!file_exists($stubPath)) {
             $this->error('Controller stub file not found in the package.');
