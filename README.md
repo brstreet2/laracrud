@@ -120,14 +120,3 @@ This project is open-sourced software licensed under the [MIT license](LICENSE).
 
 - Developed by [brstreet2](https://github.com/brstreet2)
 - Inspired by the engineering practices at my workplace, with special thanks to my engineering manager for the foundational idea.
-
----
-
-**Note:** To ensure that your `README.md` file is displayed on [Packagist](https://packagist.org), make sure that:
-
-1. The `README.md` file is located in the root directory of your repository.
-2. The file is named exactly `README.md` (case-sensitive).
-3. Your repository is public and accessible.
-4. You have submitted your package to Packagist using the correct repository URL.
-
-Once these conditions are met, Packagist will automatically display the contents of your `README.md` file on your package's page.
